@@ -16,6 +16,7 @@ services:
     env_file: .env
     depends_on:
       - mariadb
+      - redis
     volumes:
       - wp_data:/var/www/html
     networks:
@@ -29,6 +30,44 @@ services:
       - wordpress
     ports:
       - "443:443"
+      - "9001:9001"
+      - "8080:8080"
+    volumes:
+      - wp_data:/var/www/html
+    networks:
+      - inception
+  
+  adminer:
+    build: ./requirements/bonus/adminer
+    container_name: adminer
+    restart: always
+    depends_on:
+      - mariadb
+    networks:
+      - inception
+
+  redis:
+    build: ./requirements/bonus/redis
+    container_name: redis
+    restart: always
+    networks:
+      - inception
+
+  static:
+    build: ./requirements/bonus/static
+    container_name: static
+    restart: always
+    networks:
+      - inception
+
+  ftp:
+    build: ./requirements/bonus/ftp
+    container_name: ftp
+    restart: always
+    env_file: .env
+    ports:
+      - "21:21"
+      - "21100-21110:21100-21110"
     volumes:
       - wp_data:/var/www/html
     networks:
@@ -36,7 +75,18 @@ services:
 
 volumes:
   db_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /home/aghalmi/data/db
+
   wp_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /home/aghalmi/data/wp
 
 networks:
   inception:

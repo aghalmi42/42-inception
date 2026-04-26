@@ -59,6 +59,26 @@ if [ ! -f "$WP_PATH/wp-config.php" ]; then
         --user_pass="${WP_USER_PASSWORD}" \
         --role=subscriber
 
+    # Installer et activer le plugin Redis
+    wp plugin install redis-cache --activate --allow-root --path="$WP_PATH"
+
+    # Configurer Redis dans wp-config.php
+    wp config set WP_REDIS_HOST redis --allow-root --path="$WP_PATH"
+    wp config set WP_REDIS_PORT 6379 --raw --allow-root --path="$WP_PATH"
+
+    # Attendre que Redis soit prêt
+    echo "Attente de Redis..."
+    until bash -c "echo > /dev/tcp/redis/6379" 2>/dev/null; do
+        sleep 2
+    done
+    echo "Redis prêt."
+
+    # Activer le cache Redis
+    wp redis enable --allow-root --path="$WP_PATH"
+
+    # Activer le cache Redis
+    wp redis enable --allow-root --path="$WP_PATH"
+
     echo "WordPress installé."
 fi
 
